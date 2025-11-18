@@ -4,6 +4,10 @@
 #include <linux/module.h>
 #include <linux/workqueue.h>
 
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif // #ifdef CONFIG_KSU_SUSFS
+
 #include "allowlist.h"
 #include "arch.h"
 #include "core_hook.h"
@@ -56,6 +60,10 @@ int __init kernelsu_init(void)
 	ksu_allowlist_init();
 
 	ksu_throne_tracker_init();
+
+#ifdef CONFIG_KSU_SUSFS
+    susfs_init();
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 #ifdef CONFIG_KSU_KPROBES_HOOK
 	ksu_sucompat_init();

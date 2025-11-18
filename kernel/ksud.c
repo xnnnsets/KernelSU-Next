@@ -63,7 +63,7 @@ static struct work_struct stop_input_hook_work;
 bool ksu_vfs_read_hook __read_mostly = true;
 bool ksu_execveat_hook __read_mostly = true;
 bool ksu_input_hook __read_mostly = true;
-#endif
+#endif // #if defined(CONFIG_KPROBES) && !defined(CONFIG_KSU_SUSFS)
 
 u32 ksu_devpts_sid;
 
@@ -89,6 +89,7 @@ void on_post_fs_data(void)
 	pr_info("devpts sid: %d\n", ksu_devpts_sid);
 }
 
+#ifndef CONFIG_KSU_SUSFS
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 struct user_arg_ptr {
 #ifdef CONFIG_COMPAT
@@ -101,6 +102,7 @@ struct user_arg_ptr {
 #endif
 	} ptr;
 };
+#endif // #ifndef CONFIG_KSU_SUSFS
 
 static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
 {
@@ -413,8 +415,14 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	return 0;
 }
 
+#ifndef CONFIG_KSU_SUSFS
+static int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
+			size_t *count_ptr)
+#else
 int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr,
 			size_t *count_ptr)
+#endif // #ifndef CONFIG_KSU_SUSFS
+
 {
 	struct file *file = fget(fd);
 	if (!file) {
